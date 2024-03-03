@@ -49,7 +49,7 @@ def verificar_disponibilidade(data, hora):
         else:
             return "Encerrado"
     except ValueError:
-        return "Erro: Formato de data/hora inválido."  # Trata formato inválido
+        return "Erro: Formato de data/hora inválido."
 
 
 opcoes = {
