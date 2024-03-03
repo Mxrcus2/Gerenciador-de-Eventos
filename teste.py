@@ -3,15 +3,12 @@ from datetime import datetime, timedelta
 
 # import json da biblioteca
 import json
-from unittest import case
 
 # import para random id
 import uuid
 
-hoje = datetime.today()
 isLogged = False
 dadosUsuario = []
-dadosEventos = []
 
 
 def obter_categoria():
@@ -38,9 +35,21 @@ def obter_data():
             continue
 
 
-def verificar_disponibilidade():
-    hora = datetime.strptime(hora, "%H:%M").time()
-    data = datetime.strptime(data, "%d/%m/%Y").date()
+def verificar_disponibilidade(data, hora):
+    newData = f"{data} {hora}"
+    try:
+        newData = datetime.strptime(newData, "%d/%m/%Y %H:%M")
+        hoje = datetime.today()
+        hoje = hoje.strftime("%d/%m/%Y %H:%M")
+        hoje = datetime.strptime(hoje, "%d/%m/%Y %H:%M")
+        if newData > hoje:
+            return "Disponível"
+        elif newData == hoje:
+            return "Em Andamento"
+        else:
+            return "Encerrado"
+    except ValueError:
+        return "Erro: Formato de data/hora inválido."  # Trata formato inválido
 
 
 opcoes = {
@@ -61,8 +70,8 @@ opcoes3 = {
     4: "Deslogar",
 }
 # retorna todas as chaves da array
-opcoes3Values = opcoes3.keys()
-opcoes2Values = opcoes2.keys()
+opcoes3Values = list(opcoes3.keys())
+opcoes2Values = list(opcoes2.keys())
 # enquanto for verdadeiro
 while True:
     # se isLogged for = Falso
@@ -157,68 +166,71 @@ while True:
         print(opcoes3)
 
         evento = print("--------------------------------------")
-        evento = input("Selecione uma função:")
+        evento = int(input("Selecione uma função:"))
 
         if evento not in opcoes3Values:
             print("Digite um número válido!.")
-        # corresponde evento
-        match evento:
-            case "1":
-                # caso escolha 1
-                local = input("Digite o endereco:")
-                # pegar funcao (obter_data)
-                data = obter_data()
-                print(data)
-                hora = input("Digite o horário no seguinte formato (HH:mm:):")
-                print(opcoes2)
-                # pegar funcao (obter_categoria)
-                categoria = obter_categoria()
-                print(f"Voce selecionou a categoria: {categoria}")
-                descricaoEvento = input("Digite uma descrição:")
-
-                print("Evento cadastrado com sucesso")
-        # tentar
-        try:
-            # ler o conteúdo
-            with open("cadastro de evento.json", "r") as arquivo:
-                # ler o conteúdo da variavel arquivo e armazena na variavel (CopyFiles)
-                copyFiles = arquivo.read()
-            # se copyFiles tiver conteudo remove espaco em branco do comeco/final da string
-            if copyFiles.strip():
-                # se tiver conteudo em (CopyFiles) converte de string para json e armazena na variavel (LiveData)
-                liveData = json.loads(copyFiles)
-            else:
-                # se tiver vazia define (LiveData) como uma array vazia
-                liveData = []
-        except:
-            # define como uma lista vazia se uma excecao for lancada
-            liveData = []
-            # cadastro de evento em uma array
-        cadastro_evento = {
-                "id": str(uuid.uuid4()),
-                "endereco": local,
-                "data": data,
-                "hora": hora,
-                "categoria": categoria,
-                "descricao": descricaoEvento,
-        }
-            # adiciona (cadastro_evento) dentro de liveData
-        liveData.append(cadastro_evento)
-            # abre o arquivo no modo de escrita na variavel arquivo
-        with open("cadastro de evento.json", "w") as arquivo:
-                # converte (liveData) em um objeto json e grava na variavel arquivo
-            json.dump(liveData, arquivo)
-
-            case "2":
-                for evento in liveData:
-                    print(f"Seus eventos: {evento['endereco']}, {evento['data']}, {evento['hora']}, {evento['categoria']}, {evento['descricao']}")
-        disponibilidade = verificar_disponibilidade(data, hora)
-        if hoje >= data:
-            print("Evento disponivel!")
-        elif hoje == data:
-            print("Evento em andamento!")
+            continue
         else:
-            print("Evento encerrado!")
+            # corresponde evento
+            match evento:
+                case 1:
+                    # caso escolha 1
+                    local = input("Digite o endereco:")
+                    # pegar funcao (obter_data)
+                    data = obter_data()
+                    print(data)
+                    hora = input("Digite o horário no seguinte formato (HH:mm:):")
+                    print(opcoes2)
+                    # pegar funcao (obter_categoria)
+                    categoria = obter_categoria()
+                    print(f"Voce selecionou a categoria: {categoria}")
+                    descricaoEvento = input("Digite uma descrição:")
+                    # tentar
+                    try:
+                        # ler o conteúdo
+                        with open("cadastro de evento.json", "r") as arquivo:
+                            # ler o conteúdo da variavel arquivo e armazena na variavel (CopyFiles)
+                            copyFiles = arquivo.read()
+                        # se copyFiles tiver conteudo remove espaco em branco do comeco/final da string
+                        if copyFiles.strip():
+                            # se tiver conteudo em (CopyFiles) converte de string para json e armazena na variavel (LiveData)
+                            liveData = json.loads(copyFiles)
+                        else:
+                            # se tiver vazia define (LiveData) como uma array vazia
+                            liveData = []
+                    except:
+                        # define como uma lista vazia se uma excecao for lancada
+                        liveData = []
+                        # cadastro de evento em uma array
+                    cadastro_evento = {
+                        "id": str(uuid.uuid4()),
+                        "endereco": local,
+                        "data": data,
+                        "hora": hora,
+                        "categoria": categoria,
+                        "descricao": descricaoEvento,
+                    }
+                    # adiciona (cadastro_evento) dentro de liveData
+                    liveData.append(cadastro_evento)
+                    # abre o arquivo no modo de escrita na variavel arquivo
+                    with open("cadastro de evento.json", "w") as arquivo:
+                        # converte (liveData) em um objeto json e grava na variavel arquivo
+                        json.dump(liveData, arquivo)
+                        arquivo.close()
+
+                    print("Evento cadastrado com sucesso")
+
+                case 2:
+                    print("--------------------------------------")
+                    print("Seus eventos:")
+                    for index, evento in enumerate(dadosUsuario["eventos"], start=1):
+                        disponibilidade = verificar_disponibilidade(
+                            evento["data"], evento["hora"]
+                        )
+                        print(
+                            f"Evento numero {index}: {evento['endereco']}, {evento['data']}, {evento['hora']}, {evento['categoria']}, {evento['descricao']} - {disponibilidade}"
+                        )
 
         # case "3":
         # for evento in liveData:
