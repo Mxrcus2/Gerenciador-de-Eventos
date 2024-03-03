@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 
 # import json da biblioteca
 import json
+import os
 
 # import para random id
 import uuid
 
 isLogged = False
-dadosUsuario = []
+dadosUsuario = {}
 
 
 def obter_categoria():
@@ -52,6 +53,18 @@ def verificar_disponibilidade(data, hora):
         return "Erro: Formato de data/hora inválido."
 
 
+def login(email, senha, dados_existente):
+    if email in dados_existente["usersById"]:
+        if dados_existente["usersById"][email]["senha"] == senha:
+            return True, dados_existente["usersById"][email]
+        else:
+            print("Senha Incorreta. Tente novamente!")
+            return False, None
+    else:
+        print("Usuário não encontrado. Tente novamente!")
+        return False, None
+
+
 opcoes = {
     1: "Cadastro de Usuário",
     2: "Login",
@@ -88,41 +101,46 @@ while True:
             cpf = input("Digite seu cpf:")
             email_cadastro = input("Digite seu email:")
             senha_cadastro = input("Digite sua senha:")
-            print("Cadastro feito com sucesso!")
 
             # tentar
             try:
-                # ler o conteúdo do arquivo
-                with open("cadastro de pessoa.json", "r") as arquivo:
-                    # ler o conteúdo da variavel arquivo e armazena na variavel (arquivosCopiados)
-                    arquivosCopiados = arquivo.read()
-                    # se arquivosCopiados tiver conteudo remove espaco em branco do comeco/final da string
-                    if arquivosCopiados.strip():
-                        # se tiver conteudo converte de string para json e armazena na variavel (dados_existente)
-                        dados_existente = json.loads(arquivosCopiados)
-                    else:
-                        # se tiver vazia define (dados_existente) como uma array vazia
-                        dados_existente = []
-            except:
-                # define como uma lista vazia se uma excecao for lancada
-                dados_existente = []
-            # array novo_cadastro
-            novo_cadastro = {
-                "id": str(uuid.uuid4()),
-                "nome": nome,
-                "idade": idade,
-                "cpf": cpf,
-                "email": email_cadastro,
-                "senha": senha_cadastro,
-                "eventos": [],
-            }
+                # Verificar se o arquivo JSON existe e não está vazio
+                if (
+                    os.path.exists("cadastro_de_pessoa.json")
+                    and os.path.getsize("cadastro_de_pessoa.json") > 0
+                ):
+                    # ler o conteúdo do arquivo
+                    with open("cadastro_de_pessoa.json", "r") as arquivo:
+                        # ler o conteúdo da variavel arquivo e armazena na variavel (arquivosCopiados)
+                        dados_existente = json.load(arquivo)
+                else:
+                    # Se o arquivo estiver vazio, inicializarquivosCopiadosar o objeto usersById e o array allUsersById
+                    dados_existente = {"usersById": {}, "allUsersById": []}
 
-            # adicionar o (novo cadastro) aos dados existentes
-            dados_existente.append(novo_cadastro)
-            # abre o arquivo no modo de escrita na variavel arquivo
-            with open("cadastro de pessoa.json", "w") as arquivo:
-                # converte (dados_existente) em um objeto json e grava na variavel arquivo
-                json.dump(dados_existente, arquivo)
+                # Definir o novo usuário
+                novo_cadastro = {
+                    "id": str(uuid.uuid4()),
+                    "nome": nome,
+                    "idade": idade,
+                    "cpf": cpf,
+                    "email": email_cadastro,
+                    "senha": senha_cadastro,
+                    "eventos": [],
+                }
+
+                # Adicionar o novo usuário ao objeto usersById
+                dados_existente["usersById"][novo_cadastro["email"]] = novo_cadastro
+                # adicionar o ID do novo cadastro aos dados existentes
+                dados_existente["allUsersById"].append(novo_cadastro["id"])
+
+                # abre o arquivo no modo de escrita na variavel arquivo
+                with open("cadastro_de_pessoa.json", "w") as arquivo:
+                    # converte (dados_existente) em um objeto json e grava na variavel arquivo
+                    json.dump(dados_existente, arquivo, indent=4)
+
+                print("Cadastro feito com sucesso!")
+            except Exception as e:
+                print("Não foi possível criar o cadastro:", e)
         # se escolha for = 2
         elif escolha == "2":
             email = input("Digite seu email:")
@@ -130,39 +148,23 @@ while True:
             # tentar
             try:
                 # ler o conteudo do arquivo
-                with open("cadastro de pessoa.json", "r") as arquivo:
-                    # ler o conteúdo da variavel arquivo e armazena na variavel (arquivosCopiados)
-                    arquivosCopiados = arquivo.read()
-                    # se arquivosCopiados tiver conteudo remove espaco em branco do comeco/final da string
-                    if arquivosCopiados.strip():
-                        # se tiver conteudo em (arquivosCopiados) converte de string para json e armazena na variavel (dados_existente)
-                        dados_existente = json.loads(arquivosCopiados)
-                    else:
-                        # se tiver vazia define (dados_existente) como uma array vazia
-                        dados_existente = []
-            except:
-                # define como uma lista vazia se uma excecao for lancada
-                dados_existente = []
-            # loop por cada item na lista (dados_existente) cada item e atributo a variavel usuario
-            for usuario in dados_existente:
-                # verifica se o email fornecido e igual ao email armazenado em usuario[email] o mesmo acontece com a senha
-                if email == usuario["email"] and senha == usuario["senha"]:
-                    # se for igual isLogged se torna True com um login bem sucedido
-                    isLogged = True
-                    dadosUsuario = usuario
-                    # quebra do looping for
-                    break
-            # se isLogged for igual falso login invalido
-            if isLogged == False:
-                print("Erro")
-                print("Usuário não encontrado!")
-        # se digitar um numero que nao esta entre 1 e 2
-        else:
-            print("Digite um valor válido!")
-    # quando isLogged se tornar True apos o login
+                with open("cadastro_de_pessoa.json", "r") as arquivo:
+                    # ler o conteúdo do arquivo e armazenar na variável dados_existente
+                    dados_existente = json.load(arquivo)
+
+                isLogged, userData = login(email, senha, dados_existente)
+
+                if isLogged:
+                    print("Login bem sucedido!")
+                    dadosUsuario = userData
+                else:
+                    print("Falha no login.")
+
+            except Exception as e:
+                print("Não foi possível se conectar ao banco de dados:", e)
     else:
         # mostra um bem vindo personalizado com nome dentro da variavel usuario
-        print(f"Bem-vindo {usuario['nome']}")
+        print(f"Bem-vindo {dadosUsuario['nome']}")
         print(opcoes3)
 
         evento = print("--------------------------------------")
@@ -224,13 +226,21 @@ while True:
                 case 2:
                     print("--------------------------------------")
                     print("Seus eventos:")
-                    for index, evento in enumerate(dadosUsuario["eventos"], start=1):
-                        disponibilidade = verificar_disponibilidade(
-                            evento["data"], evento["hora"]
-                        )
-                        print(
-                            f"Evento numero {index}: {evento['endereco']}, {evento['data']}, {evento['hora']}, {evento['categoria']}, {evento['descricao']} - {disponibilidade}"
-                        )
+
+                    if len(dadosUsuario["eventos"]) > 0:
+                        for index, evento in enumerate(
+                            dadosUsuario["eventos"], start=1
+                        ):
+                            disponibilidade = verificar_disponibilidade(
+                                evento["data"], evento["hora"]
+                            )
+                            print(
+                                f"Evento numero {index}: {evento['endereco']}, {evento['data']}, {evento['hora']}, {evento['categoria']}, {evento['descricao']} - {disponibilidade}"
+                            )
+                        print("--------------------------------------")
+                    else:
+                        print("Nenhum evento cadastrado.")
+                        print("--------------------------------------")
 
         # case "3":
         # for evento in liveData:
