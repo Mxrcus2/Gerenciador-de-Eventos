@@ -1,0 +1,26 @@
+{
+    "usersById": {
+        "A": {
+            "id": "7bddef65-15b9-4354-aabd-50d13a712298",
+            "nome": "A",
+            "idade": "A",
+            "cpf": "A",
+            "email": "A",
+            "senha": "A",
+            "eventos": []
+        },
+        "b": {
+            "id": "eea9c712-7574-47c5-9826-79ca3a8fe660",
+            "nome": "b",
+            "idade": "b",
+            "cpf": "b",
+            "email": "b",
+            "senha": "b",
+            "eventos": []
+        }
+    },
+    "allUsersById": [
+        "7bddef65-15b9-4354-aabd-50d13a712298",
+        "eea9c712-7574-47c5-9826-79ca3a8fe660"
+    ]
+}
