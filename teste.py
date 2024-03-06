@@ -8,8 +8,11 @@ import os
 # import para random id
 import uuid
 
+from errorType import CustomError
+
 isLogged = False
 dadosUsuario = {}
+usuario_id = str(uuid.uuid4())
 
 
 def obter_categoria():
@@ -95,29 +98,33 @@ while True:
         escolha = input("Qual opcao deseja: ")
         # se escolha for igual a 1
         if escolha == "1":
-            print("Faca seu cadastro;")
-            nome = input("Digite seu nome:")
-            idade = input("Digite seu idade:")
-            cpf = input("Digite seu cpf:")
-            email_cadastro = input("Digite seu email:")
-            senha_cadastro = input("Digite sua senha:")
 
             # tentar
             try:
                 # Verificar se o arquivo JSON existe e não está vazio
                 if (
                     os.path.exists("cadastro_de_pessoa.json")
+                    # verifica se o arquivo json existe e se o tamanho e maior que 0
                     and os.path.getsize("cadastro_de_pessoa.json") > 0
                 ):
                     # ler o conteúdo do arquivo
                     with open("cadastro_de_pessoa.json", "r") as arquivo:
-                        # ler o conteúdo da variavel arquivo e armazena na variavel (arquivosCopiados)
+                        # ler o conteúdo da variavel arquivo e armazena na variavel (dados_existente)
                         dados_existente = json.load(arquivo)
                 else:
-                    # Se o arquivo estiver vazio, inicializarquivosCopiadosar o objeto usersById e o array allUsersById
+                    # Se o arquivo estiver vazio, inicializar dados_existente o objeto usersById e o array allUsersById
                     dados_existente = {"usersById": {}, "allUsersById": []}
 
                 # Definir o novo usuário
+                print("Faca seu cadastro;")
+                nome = input("Digite seu nome:")
+                idade = input("Digite seu idade:")
+                email_cadastro = input("Digite seu email:")
+                if dados_existente["usersById"][email_cadastro]:
+                    raise CustomError("Email ja existente!")
+                senha_cadastro = input("Digite sua senha:")
+                cpf = input("Digite seu cpf:")
+
                 novo_cadastro = {
                     "id": str(uuid.uuid4()),
                     "nome": nome,
@@ -128,7 +135,7 @@ while True:
                     "eventos": [],
                 }
 
-                # Adicionar o novo usuário ao objeto usersById
+                # Adicionar o novo cadastro ao objeto usersById
                 dados_existente["usersById"][novo_cadastro["email"]] = novo_cadastro
                 # adicionar o ID do novo cadastro aos dados existentes
                 dados_existente["allUsersById"].append(novo_cadastro["id"])
@@ -139,8 +146,9 @@ while True:
                     json.dump(dados_existente, arquivo, indent=4)
 
                 print("Cadastro feito com sucesso!")
-            except Exception as e:
-                print("Não foi possível criar o cadastro:", e)
+            except CustomError as erro:
+                print("Não foi possível criar o cadastro:", erro)
+                continue
         # se escolha for = 2
         elif escolha == "2":
             email = input("Digite seu email:")
@@ -188,23 +196,7 @@ while True:
                     categoria = obter_categoria()
                     print(f"Voce selecionou a categoria: {categoria}")
                     descricaoEvento = input("Digite uma descrição:")
-                    # tentar
-                    try:
-                        # ler o conteúdo
-                        with open("cadastro de evento.json", "r") as arquivo:
-                            # ler o conteúdo da variavel arquivo e armazena na variavel (CopyFiles)
-                            copyFiles = arquivo.read()
-                        # se copyFiles tiver conteudo remove espaco em branco do comeco/final da string
-                        if copyFiles.strip():
-                            # se tiver conteudo em (CopyFiles) converte de string para json e armazena na variavel (LiveData)
-                            liveData = json.loads(copyFiles)
-                        else:
-                            # se tiver vazia define (LiveData) como uma array vazia
-                            liveData = []
-                    except:
-                        # define como uma lista vazia se uma excecao for lancada
-                        liveData = []
-                        # cadastro de evento em uma array
+
                     cadastro_evento = {
                         "id": str(uuid.uuid4()),
                         "endereco": local,
@@ -213,14 +205,6 @@ while True:
                         "categoria": categoria,
                         "descricao": descricaoEvento,
                     }
-                    # adiciona (cadastro_evento) dentro de liveData
-                    liveData.append(cadastro_evento)
-                    # abre o arquivo no modo de escrita na variavel arquivo
-                    with open("cadastro de evento.json", "w") as arquivo:
-                        # converte (liveData) em um objeto json e grava na variavel arquivo
-                        json.dump(liveData, arquivo)
-                        arquivo.close()
-
                     print("Evento cadastrado com sucesso")
 
                 case 2:
