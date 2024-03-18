@@ -1,26 +1,31 @@
 {
     "usersById": {
-        "A": {
-            "id": "da37b572-40fb-44ba-a08b-3e402475fc0f",
-            "nome": "A",
-            "idade": "13",
-            "cpf": "13",
-            "email": "A",
-            "senha": "A",
-            "eventos": []
-        },
-        "b": {
-            "id": "eea9c712-7574-47c5-9826-79ca3a8fe660",
-            "nome": "b",
-            "idade": "b",
-            "cpf": "b",
-            "email": "b",
-            "senha": "b",
-            "eventos": []
+        "a": {
+            "id": "bd908791-14de-4978-9766-820974e8b449",
+            "nome": "a",
+            "idade": "a",
+            "cpf": "a",
+            "email": "a",
+            "senha": "a",
+            "eventos": {
+                "eventsById": {
+                    "94f91051-371a-411b-b247-846fd19b2651": {
+                        "isDeleted": true,
+                        "id": "94f91051-371a-411b-b247-846fd19b2651",
+                        "endereco": "a",
+                        "data": "12/12/2005",
+                        "hora": "12:13",
+                        "categoria": "Festa",
+                        "descricao": "a"
+                    }
+                },
+                "allEventsById": [
+                    "94f91051-371a-411b-b247-846fd19b2651"
+                ]
+            }
         }
     },
     "allUsersById": [
-        "eea9c712-7574-47c5-9826-79ca3a8fe660",
-        "da37b572-40fb-44ba-a08b-3e402475fc0f"
+        "bd908791-14de-4978-9766-820974e8b449"
     ]
 }

@@ -32,28 +32,11 @@ def obter_data():
         try:
             data_input = input("Digite a data (DD/MM/AAAA): ")
             data = datetime.strptime(data_input, "%d/%m/%Y").date()
+            # Retorna somente a parte da data (dia, mês e ano)
             return data.strftime("%d/%m/%Y")
-        # Retorna somente a parte da data (dia, mês e ano)
         except ValueError:
             print("Formato de data inválido. Tente novamente.")
             continue
-
-
-def verificar_disponibilidade(data, hora):
-    newData = f"{data} {hora}"
-    try:
-        newData = datetime.strptime(newData, "%d/%m/%Y %H:%M")
-        hoje = datetime.today()
-        hoje = hoje.strftime("%d/%m/%Y %H:%M")
-        hoje = datetime.strptime(hoje, "%d/%m/%Y %H:%M")
-        if newData > hoje:
-            return "Disponível"
-        elif newData == hoje:
-            return "Em Andamento"
-        else:
-            return "Encerrado"
-    except ValueError:
-        return "Erro: Formato de data/hora inválido."
 
 
 def login(email, senha, dados_existente):
@@ -120,7 +103,10 @@ while True:
                 nome = input("Digite seu nome:")
                 idade = input("Digite seu idade:")
                 email_cadastro = input("Digite seu email:")
-                if dados_existente["usersById"][email_cadastro]:
+                if (
+                    dados_existente["usersById"]
+                    and dados_existente["usersById"][email_cadastro]
+                ):
                     raise CustomError("Email ja existente!")
                 senha_cadastro = input("Digite sua senha:")
                 cpf = input("Digite seu cpf:")
@@ -132,14 +118,16 @@ while True:
                     "cpf": cpf,
                     "email": email_cadastro,
                     "senha": senha_cadastro,
-                    "eventos": [],
+                    "eventos": {
+                        "eventsById": {},
+                        "allEventsById": [],
+                    },
                 }
 
                 # Adicionar o novo cadastro ao objeto usersById
                 dados_existente["usersById"][novo_cadastro["email"]] = novo_cadastro
                 # adicionar o ID do novo cadastro aos dados existentes
                 dados_existente["allUsersById"].append(novo_cadastro["id"])
-
                 # abre o arquivo no modo de escrita na variavel arquivo
                 with open("cadastro_de_pessoa.json", "w") as arquivo:
                     # converte (dados_existente) em um objeto json e grava na variavel arquivo
@@ -184,61 +172,107 @@ while True:
         else:
             # corresponde evento
             match evento:
+                # caso escolha 1
                 case 1:
-                    # caso escolha 1
-                    local = input("Digite o endereco:")
-                    # pegar funcao (obter_data)
-                    data = obter_data()
-                    print(data)
-                    hora = input("Digite o horário no seguinte formato (HH:mm:):")
-                    print(opcoes2)
-                    # pegar funcao (obter_categoria)
-                    categoria = obter_categoria()
-                    print(f"Voce selecionou a categoria: {categoria}")
-                    descricaoEvento = input("Digite uma descrição:")
+                    try:
+                        with open("cadastro_de_pessoa.json", "r") as arquivo:
+                            # ler o conteúdo da variavel arquivo e armazena na variavel (dados_existente)
+                            dados_existente = json.load(arquivo)
 
-                    cadastro_evento = {
-                        "id": str(uuid.uuid4()),
-                        "endereco": local,
-                        "data": data,
-                        "hora": hora,
-                        "categoria": categoria,
-                        "descricao": descricaoEvento,
-                    }
-                    print("Evento cadastrado com sucesso")
+                        local = input("Digite o endereco:")
+                        # pegar funcao (obter_data)
+                        data = obter_data()
+                        print(data)
+                        hora = input("Digite o horário no seguinte formato (HH:mm:):")
+                        print(opcoes2)
+                        # pegar funcao (obter_categoria)
+                        categoria = obter_categoria()
+                        print(f"Voce selecionou a categoria: {categoria}")
+                        descricaoEvento = input("Digite uma descrição:")
+                        eventoId = str(uuid.uuid4())
+                        cadastro_evento = {
+                            "isDeleted": False,
+                            "id": eventoId,
+                            "endereco": local,
+                            "data": data,
+                            "hora": hora,
+                            "categoria": categoria,
+                            "descricao": descricaoEvento,
+                        }
+                        user_email = dadosUsuario["email"]
+                        userEvents = dados_existente["usersById"][user_email]["eventos"]
+                        if not userEvents["eventsById"]:
+                            userEvents["eventsById"] = {}
+                        userEvents["eventsById"][eventoId] = cadastro_evento
+                        userEvents["allEventsById"].append(eventoId)
+                        dadosUsuario = dados_existente["usersById"][user_email]
+                        with open("cadastro_de_pessoa.json", "w") as arquivo:
+                            # converte (dados_existente) em um objeto json e grava na variavel arquivo
+                            json.dump(dados_existente, arquivo, indent=4)
+
+                        print("Evento cadastrado com sucesso")
+                    except CustomError as erro:
+                        print("Não foi possível criar o evento:", erro)
+                        continue
 
                 case 2:
                     print("--------------------------------------")
                     print("Seus eventos:")
+                    total_de_eventos_cadastrados = 0
 
                     if len(dadosUsuario["eventos"]) > 0:
-                        for index, evento in enumerate(
-                            dadosUsuario["eventos"], start=1
-                        ):
-                            disponibilidade = verificar_disponibilidade(
-                                evento["data"], evento["hora"]
+                        # O loop for itera sobre os eventos do usuário, armazenando o ID do evento (eventoId) e o dicionário do evento (evento) em cada iteração
+                        for eventoId, evento in dadosUsuario["eventos"][
+                            "eventsById"
+                        ].items():
+                            if evento["isDeleted"] == True:
+                                continue
+                            hoje = datetime.today()
+                            # Converte a string da hora para datetime
+                            evento_hora_datetime = datetime.strptime(
+                                evento["data"] + " " + evento["hora"], "%d/%m/%Y %H:%M"
                             )
-                            print(
-                                f"Evento numero {index}: {evento['endereco']}, {evento['data']}, {evento['hora']}, {evento['categoria']}, {evento['descricao']} - {disponibilidade}"
-                            )
+
+                            if hoje > evento_hora_datetime:
+                                print(
+                                    f"Evento - {eventoId} - {evento['endereco']} - Encerrado!"
+                                )
+                            elif hoje == evento_hora_datetime:
+                                print(
+                                    f"Evento - {eventoId} - {evento['endereco']} - Em Andamento!"
+                                )
+                            else:
+                                print(
+                                    f"Evento - {eventoId} - {evento['endereco']} - Disponível!"
+                                )
+                            total_de_eventos_cadastrados += 1
+
                         print("--------------------------------------")
                     else:
                         print("Nenhum evento cadastrado.")
                         print("--------------------------------------")
+                    if total_de_eventos_cadastrados == 0:
+                        print("Nenhum evento cadastrado!")
+                        print("--------------------------------------")
+                case 3:
+                    print("--------------------------------------")
+                    eventoId = input("Digite um id para ser cancelado: ")
+                    if not dadosUsuario["eventos"]["eventsById"][eventoId]:
+                        print("Evento nao encontrado")
+                        continue
+                    with open("cadastro_de_pessoa.json", "r") as arquivo:
+                        # ler o conteúdo da variavel arquivo e armazena na variavel (dados_existente)
+                        dados_existente = json.load(arquivo)
+                    user_email = dadosUsuario["email"]
+                    evento = dados_existente["usersById"][user_email]["eventos"][
+                        "eventsById"
+                    ][eventoId]
+                    evento["isDeleted"] = True
+                    with open("cadastro_de_pessoa.json", "w") as arquivo:
+                        json.dump(dados_existente, arquivo, indent=4)
+                    print(f"Evento {evento['endereco']} cancelado com sucesso")
+                    dadosUsuario["eventos"]["eventsById"][eventoId] = evento
 
-        # case "3":
-        # for evento in liveData:
-        # print(f"Eventos para serem cancelados: {evento['endereco']}")
-        # escolha = str(input("Digite qual evento voce deseja cancelar:"))
-
-    # try:
-    # if escolha in liveData:
-    # del liveData[liveData.index(escolha)]
-    # print("Evento cancelado com sucesso")
-    # else:
-    # print("Entrada inválida. Digite um nome válido.")
-    # except IndexError:
-    # print("Evento não encontrado. Verifique o nome digitado.")
-
-    # case "4":
-    # isLogged = False
+                case 4:
+                    isLogged = False
+                    dadosUsuario = {}
