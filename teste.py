@@ -201,9 +201,11 @@ while True:
                         }
                         user_email = dadosUsuario["email"]
                         userEvents = dados_existente["usersById"][user_email]["eventos"]
+                        # se nao tiver nada em eventsById, volta como um dicionario vazio
                         if not userEvents["eventsById"]:
                             userEvents["eventsById"] = {}
                         userEvents["eventsById"][eventoId] = cadastro_evento
+                        # adiciona o eventoId dentro da array allEventsById
                         userEvents["allEventsById"].append(eventoId)
                         dadosUsuario = dados_existente["usersById"][user_email]
                         with open("cadastro_de_pessoa.json", "w") as arquivo:
@@ -219,7 +221,7 @@ while True:
                     print("--------------------------------------")
                     print("Seus eventos:")
                     total_de_eventos_cadastrados = 0
-
+                    # se o tamanho d eventos for 0
                     if len(dadosUsuario["eventos"]) > 0:
                         # O loop for itera sobre os eventos do usuário, armazenando o ID do evento (eventoId) e o dicionário do evento (evento) em cada iteração
                         for eventoId, evento in dadosUsuario["eventos"][
@@ -257,6 +259,7 @@ while True:
                 case 3:
                     print("--------------------------------------")
                     eventoId = input("Digite um id para ser cancelado: ")
+                    # se nao tiver evento disponivel em evento id
                     if not dadosUsuario["eventos"]["eventsById"][eventoId]:
                         print("Evento nao encontrado")
                         continue
