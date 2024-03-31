@@ -3,11 +3,14 @@ from datetime import datetime, timedelta
 
 # import json da biblioteca
 import json
+
+# import os para interagir com sistema operacional
 import os
 
 # import para random id
 import uuid
 
+# importar um custom erro de errotype
 from errorType import CustomError
 
 isLogged = False
