@@ -15,6 +15,87 @@ dadosUsuario = {}
 usuario_id = str(uuid.uuid4())
 
 
+def validacao_nome():
+    while True:
+        nome = input("Digite seu nome: ")
+        if nome.isnumeric():
+            print("Digite apenas letras!")
+        else:
+            return nome
+
+
+def validacao_idade():
+    while True:
+        idade = input("Digite sua idade: ")
+        if not idade.isnumeric():
+            print("Digite apenas numeros!")
+            continue
+        if len(idade) == 1:
+            print("Voce e muito novo!")
+            continue
+        elif len(idade) == 3:
+            print("Digite uma idade valida!")
+            continue
+        else:
+            return idade
+
+
+def validacao_senha():
+    while True:
+        senha_cadastro = input("Digite sua senha:")
+        if len(senha_cadastro) < 5:
+            print("Sua senha e muito pequena")
+        else:
+            return senha_cadastro
+
+
+def verifica_cpf():
+    while True:
+        cpf = input("Digite seu CPF: ")
+        if cpf.isalpha():
+            print("Digite apenas numeros!")
+            continue
+        if len(cpf) == 11:
+            pass
+        else:
+            print("Numeros insuficientes de CPF")
+            continue
+        return cpf
+
+
+def validacao_cpf():
+    nove_digitos_cpf = cpf[:9]
+    contador_regressivo_1 = 10
+    resultado_1 = 0
+
+    for digito in nove_digitos_cpf:
+        resultado_1 += int(digito) * contador_regressivo_1
+        contador_regressivo_1 -= 1
+    digito = (resultado_1 * 10) % 11
+    digito = digito if digito <= 9 else 0
+
+    dez_digitos_cpf = nove_digitos_cpf + str(cpf[9])
+    contador_regressivo_2 = 11
+    resultado_2 = 0
+
+    for digito_2 in dez_digitos_cpf:
+        resultado_2 += int(digito_2) * contador_regressivo_2
+        contador_regressivo_2 -= 1
+    digito_2 = (resultado_2 * 10) % 11
+    digito_2 = digito_2 if digito_2 <= 9 else 0
+
+    validacao_cpf = f"{nove_digitos_cpf}{digito}{digito_2}"
+    if len(set(nove_digitos_cpf)) == 1:
+        print("Seu CPF é inválido por conter dígitos repetidos.")
+        return None
+    if cpf == validacao_cpf:
+        print(f"Seu CPF e valido, {cpf}")
+        return cpf
+    else:
+        print("Seu CPF e invalido")
+        return None
+
+
 def obter_categoria():
     while True:
         try:
@@ -100,24 +181,26 @@ while True:
 
                 # Definir o novo usuário
                 print("Faca seu cadastro;")
-                nome = input("Digite seu nome:")
-                idade = input("Digite seu idade:")
+                nome = validacao_nome()
+                idade = validacao_idade()
                 email_cadastro = input("Digite seu email:")
                 if (
                     dados_existente["usersById"]
                     and dados_existente["usersById"][email_cadastro]
                 ):
                     raise CustomError("Email ja existente!")
-                senha_cadastro = input("Digite sua senha:")
-                cpf = input("Digite seu cpf:")
-
+                senha_cadastro = validacao_senha()
+                cpf = verifica_cpf()
+                valid_cpf = validacao_cpf()
+                if valid_cpf == None:
+                    continue
                 novo_cadastro = {
                     "id": str(uuid.uuid4()),
                     "nome": nome,
                     "idade": idade,
-                    "cpf": cpf,
                     "email": email_cadastro,
                     "senha": senha_cadastro,
+                    "cpf": cpf,
                     "eventos": {
                         "eventsById": {},
                         "allEventsById": [],

@@ -1,31 +1,19 @@
 {
     "usersById": {
         "a": {
-            "id": "bd908791-14de-4978-9766-820974e8b449",
+            "id": "2dea6fba-d9c7-46c1-ab42-53b359504efb",
             "nome": "a",
-            "idade": "a",
-            "cpf": "a",
+            "idade": "12",
             "email": "a",
-            "senha": "a",
+            "senha": "12312321",
+            "cpf": "14055911963",
             "eventos": {
-                "eventsById": {
-                    "94f91051-371a-411b-b247-846fd19b2651": {
-                        "isDeleted": true,
-                        "id": "94f91051-371a-411b-b247-846fd19b2651",
-                        "endereco": "a",
-                        "data": "12/12/2005",
-                        "hora": "12:13",
-                        "categoria": "Festa",
-                        "descricao": "a"
-                    }
-                },
-                "allEventsById": [
-                    "94f91051-371a-411b-b247-846fd19b2651"
-                ]
+                "eventsById": {},
+                "allEventsById": []
             }
         }
     },
     "allUsersById": [
-        "bd908791-14de-4978-9766-820974e8b449"
+        "2dea6fba-d9c7-46c1-ab42-53b359504efb"
     ]
 }
